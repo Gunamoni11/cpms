@@ -14,20 +14,20 @@ pipeline{
            }
            sh "sudo sed -i.bak 's/endpoint/${jsonitem['DBInstances'][0]['Endpoint']['Address']}/g' userdata.txt"
           script{
-              def cmd = "aws elb create-load-balancer --name my-load-balancer --subnets subnet-04bb8948 subnet-15e22868 --security-groups sg-0244e3f85210cc582 --region us-east-2 "
+              def cmd = "aws elbv2 create-load-balancer --name my-load-balancer --subnets subnet-04bb8948 subnet-15e22868 --security-groups sg-0244e3f85210cc582 --region us-east-2 "
               def output = sh(script: cmd,returnStdout: true)
               jsonitem1 = readJSON text: output
               println(jsonitem1)
               sleep(100)
             }
           script{
-              def cmd = "aws elb create-target-group --name my-targets --protocol HTTP --port 80 --target-type instance --vpc-id vpc-6014600b --region us-east-2"
+              def cmd = "aws elbv2 create-target-group --name my-targets --protocol HTTP --port 80 --target-type instance --vpc-id vpc-6014600b --region us-east-2"
               def output = sh(script: cmd,returnStdout: true)
               jsonitem2 = readJSON text: output
               println(jsonitem2)
               sleep(180)
                }
-           sh "aws elb create-listener --load-balancer-arn ${jsonitem1['LoadBalancers'][0]['LoadBalancerArn']} --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=${jsonitem2['TargetGroups'][0]['TargetGroupArn']} --region us-east-2"
+           sh "aws elbv2 create-listener --load-balancer-arn ${jsonitem1['LoadBalancers'][0]['LoadBalancerArn']} --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=${jsonitem2['TargetGroups'][0]['TargetGroupArn']} --region us-east-2"
            sh "aws autoscaling create-launch-configuration --launch-configuration-name my-lc-cli --image-id ami-0fb653ca2d3203ac1 --instance-type t2.micro --security-groups sg-0244e3f85210cc582 --key-name terra --iam-instance-profile demo_full_access --user-data file://userdata.txt --region us-east-2"
            sh "aws autoscaling create-auto-scaling-group --auto-scaling-group-name my-asg-cli --launch-configuration-name my-lc-cli --max-size 2 --min-size 1 --desired-capacity 1 --target-group-arns ${jsonitem2['TargetGroups'][0]['TargetGroupArn']} --availability-zones us-east-2c --region us-east-2"
         }
