@@ -4,7 +4,7 @@ pipeline{
        stage('hosting application'){
         steps{
           sh "ls"
-          sh "aws rds create-db-instance --db-instance-identifier test-mysql-instance --db-name cpms --db-instance-class db.t2.micro --vpc-security-group-ids sg-086c66f49f3a1b1cb --engine mysql --engine-version 5.7 --db-parameter-group-name default.mysql5.7 --publicly-accessible  --main-username admin --main-user-password Nareshkumar --allocated-storage 10 --region us-west-2"
+          sh "aws rds create-db-instance --db-instance-identifier test-mysql-instance --db-name cpms --db-instance-class db.t2.micro --vpc-security-group-ids sg-086c66f49f3a1b1cb --engine mysql --engine-version 5.7 --db-parameter-group-name default.mysql5.7 --publicly-accessible  --master-username admin --master-user-password Nareshkumar --allocated-storage 10 --region us-west-2"
           sleep(450)
           script{
               def cmd = "aws rds describe-db-instances --db-instance-identifier test-mysql-instance --region us-west-2"
